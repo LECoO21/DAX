@@ -38,19 +38,3 @@
 3. 松手查看识别文字和译文，按 **Esc** 取消截图或关闭结果。
 
 截图翻译默认使用 **⌃⌥S**，可在「设置 → 通用」改为 **⌥2** 等组合。首次使用系统翻译时，按提示下载语言资源。
-
-## 从源码构建
-
-准备 macOS 15 或更新版本，以及 Xcode Command Line Tools。
-
-```bash
-git clone https://github.com/LECoO21/DAX.git
-cd DAX
-swift build
-```
-
-当前提供开发版源码，打包为可安装应用需要配置自己的代码签名。
-
----
-
-使用体验参考 [Bob](https://github.com/ripperhe/Bob)，基于公开资料独立实现。第三方组件的许可证随源码保留。
