@@ -1,0 +1,5 @@
+Generated using the built-in image_gen tool.
+
+Design a refined macOS application icon for DAX. A centered golden retriever dog head on a deep matte black rounded-square tile. The retriever must be unmistakable, with soft floppy ears, a broad gentle muzzle, warm intelligent dark eyes and a small friendly smile. Elegant modern mascot logo, clean sculpted shapes with restrained soft shading, warm honey-gold fur and a lighter cream muzzle, crisp recognizable silhouette. Sophisticated, charming and beautifully balanced, readable at small sizes. Frontal portrait, head only, occupies about 72 percent of the black tile, symmetrical overall with subtle natural character. Tile has smooth continuous rounded corners, subtle edge definition, fills 90 percent of a square canvas with equal clear margin. Transparent exterior around the black tile, genuinely transparent alpha. One single finished icon, 1024x1024 square. No text, letters, watermark, extra objects, collar, scenery or mockup presentation. Use case logo-brand. Final production icon artwork.
+
+The menu-bar dog is native vector artwork, exported as PDF template and white SVG/PNG.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary title="DAX">
+  <suite name="DAX Suite" code="DAXs" description="Translation and OCR automation">
+    <command name="request" code="DAXsreqt" description="Submit a JSON request. Query the status path for asynchronous results.">
+      <cocoa class="DAXRequestCommand"/>
+      <direct-parameter type="text" description="JSON with path and body"/>
+      <result type="text" description="JSON acknowledgement or current status"/>
+    </command>
+    <command name="translate" code="DAXstrns" description="Translate text and show the result panel.">
+      <cocoa class="DAXTranslateCommand"/>
+      <direct-parameter type="text"/>
+      <result type="text" description="Query identifier"/>
+    </command>
+  </suite>
+</dictionary>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Actions</key>
+	<array>
+		<dict>
+			<key>Title</key>
+			<string>DAX 翻译</string>
+			<key>URL</key>
+			<string>dax://translate?text={popclip text}</string>
+		</dict>
+	</array>
+	<key>Extension Description</key>
+	<string>使用 DAX 翻译选中文字</string>
+	<key>Extension Identifier</key>
+	<string>com.leco.dax.popclip</string>
+	<key>Extension Name</key>
+	<string>DAX</string>
+</dict>
+</plist>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'sha256-n8MYC0OPQCxfxQZ1aXF3e9uTMSvkE44Y681/TRDf+14='; style-src 'self' 'unsafe-inline' file:; img-src data: https: bob-plugin:; font-src 'self' file: data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="highlight.css">
+<link rel="stylesheet" href="katex.css">
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: transparent; }
+body { font: 15px -apple-system, BlinkMacSystemFont, sans-serif; color: CanvasText; line-height: 1.5; overflow-wrap: anywhere; }
+#result { display: flow-root; }
+p { margin: 0 0 .65em; }
+p:last-child { margin-bottom: 0; }
+pre { padding: 10px; border-radius: 7px; overflow: auto; white-space: pre; background: rgba(127,127,127,.15); }
+code { font-size: .9em; }
+table { border-collapse: collapse; max-width: 100%; display: block; overflow: auto; }
+td, th { padding: 5px; border: 1px solid #8886; }
+img, svg { max-width: 100%; height: auto; }
+blockquote { margin: 0; border-left: 3px solid #888; padding-left: 10px; }
+a { color: #1688ff; }
+h1, h2, h3 { font-size: 1.12em; margin: .6em 0; }
+ul, ol { padding-left: 1.4em; margin: .3em 0; }
+.plain { white-space: pre-wrap; }
+.mermaid { overflow: auto; }
+.render-warning { color: #b9770e; font-size: .85em; }
+</style>
+<script src="marked.js"></script>
+<script src="purify.js"></script>
+<script src="highlight.js"></script>
+<script src="katex.js"></script>
+<script src="katex-auto-render.js"></script>
+<script src="mermaid.js"></script>
+</head>
+<body>
+<main id="result"></main>
+<script id="dax-renderer">
+(() => {
+  'use strict';
+  const target = document.getElementById('result');
+  let revision = 0;
+  const imageProtocols = /^(?:https:|bob-plugin:|data:image\/(?:png|jpe?g|gif|webp|avif);base64,)/i;
+  const sanitizeOptions = {
+    USE_PROFILES: { html: true, svg: true, mathMl: true },
+    FORBID_TAGS: ['script', 'style', 'link', 'meta', 'base', 'iframe', 'object', 'embed', 'form', 'input', 'textarea', 'button', 'select', 'audio', 'video'],
+    FORBID_ATTR: ['style', 'srcdoc', 'formaction', 'ping'],
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|bob-plugin):|data:image\/(?:png|jpe?g|gif|webp|avif);base64,|[#/]|[^:]*$)/i
+  };
+  const reportHeight = () => {
+    const height = Math.ceil(target.getBoundingClientRect().height);
+    window.webkit?.messageHandlers?.height?.postMessage(Math.max(24, height));
+  };
+  const filterImages = () => {
+    target.querySelectorAll('img').forEach(image => {
+      const src = image.getAttribute('src') || '';
+      if (!imageProtocols.test(src)) image.removeAttribute('src');
+      image.removeAttribute('srcset');
+      image.referrerPolicy = 'no-referrer';
+      image.addEventListener('load', reportHeight, { once: true });
+      image.addEventListener('error', reportHeight, { once: true });
+    });
+    target.querySelectorAll('svg image').forEach(image => {
+      ['href', 'xlink:href'].forEach(attribute => {
+        const value = image.getAttribute(attribute);
+        if (value && !imageProtocols.test(value)) image.removeAttribute(attribute);
+      });
+    });
+  };
+  window.daxRender = async payload => {
+    const current = ++revision;
+    const text = typeof payload?.text === 'string' ? payload.text : '';
+    const size = Math.max(10, Math.min(Number(payload?.fontSize) || 15, 36));
+    document.body.style.fontSize = `${size}px`;
+    target.className = '';
+    if (payload?.format === 'plain' || !window.DOMPurify) {
+      target.className = 'plain';
+      target.textContent = text;
+      reportHeight();
+      return;
+    }
+    const html = payload?.format === 'markdown' && window.marked ? marked.parse(text, { gfm: true }) : text;
+    target.innerHTML = DOMPurify.sanitize(html, sanitizeOptions);
+    filterImages();
+    const diagrams = [];
+    target.querySelectorAll('pre code.language-mermaid').forEach(code => {
+      const container = document.createElement('div');
+      container.className = 'mermaid';
+      container.textContent = code.textContent;
+      code.parentNode.replaceWith(container);
+      diagrams.push(container);
+    });
+    target.querySelectorAll('pre code').forEach(code => {
+      try { window.hljs?.highlightElement(code); } catch (_) {}
+    });
+    try {
+      window.renderMathInElement?.(target, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false },
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false,
+        trust: false
+      });
+    } catch (_) {}
+    reportHeight();
+    if (diagrams.length && window.mermaid) {
+      mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', suppressErrorRendering: true,
+        theme: matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'default', flowchart: { htmlLabels: false } });
+      for (let index = 0; index < diagrams.length; index++) {
+        if (current !== revision) return;
+        const node = diagrams[index];
+        try {
+          const rendered = await mermaid.render(`dax-diagram-${current}-${index}`, node.textContent);
+          if (current !== revision) return;
+          node.innerHTML = DOMPurify.sanitize(rendered.svg, { USE_PROFILES: { svg: true, svgFilters: true } });
+        } catch (_) {
+          if (current !== revision) return;
+          node.className = 'plain';
+          const warning = document.createElement('div');
+          warning.className = 'render-warning';
+          warning.textContent = '图表语法无法显示，已保留原文。';
+          node.appendChild(warning);
+        }
+        reportHeight();
+      }
+    }
+    if (current === revision) {
+      filterImages();
+      reportHeight();
+      document.fonts?.ready.then(() => { if (current === revision) reportHeight(); });
+    }
+  };
+  new ResizeObserver(reportHeight).observe(target);
+  window.addEventListener('resize', reportHeight);
+  window.addEventListener('load', reportHeight);
+  reportHeight();
+})();
+</script>
+</body>
+</html>

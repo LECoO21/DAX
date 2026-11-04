@@ -1,0 +1,18 @@
+.vendor/
+.build/
+dist/
+.signing/
+.DS_Store
+.swiftpm/
+.env
+.env.*
+*.p12
+*.pfx
+*.pem
+*.key
+*.keychain
+*.keychain-db
+*.log
+
+# Local development notes and acceptance records.
+/docs/development-status.md
